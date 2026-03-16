@@ -11,3 +11,13 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+jwt:
+  access:
+    secret_key: "Y29udHJhc2XDsWEgZmFjaGVyaXRhY29udHJhc2XDsWEgZmFjaGVyaXRhY29udHJhc2XDsWEgZmFjaGVyaXRh"
+    expiration: 900000        # 15 mins
+  refresh:
+    expiration: 604800000     # 7 dias
+
+cookie:
+  secure: false
