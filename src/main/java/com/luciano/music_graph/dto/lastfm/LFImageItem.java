@@ -1,6 +1,9 @@
 package com.luciano.music_graph.dto.lastfm;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public record LFImageItem(
-        String name
+        @JsonProperty("#text") String text,
+        String size
 ) {
 }

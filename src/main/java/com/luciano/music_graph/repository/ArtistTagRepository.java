@@ -1,0 +1,11 @@
+package com.luciano.music_graph.repository;
+
+import com.luciano.music_graph.model.ArtistTag;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+import java.util.UUID;
+
+public interface ArtistTagRepository extends JpaRepository<ArtistTag, UUID> {
+    List<ArtistTag> findAllByArtistId(UUID artistId);
+}

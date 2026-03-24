@@ -15,7 +15,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Tags {
+public class ArtistTag {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
