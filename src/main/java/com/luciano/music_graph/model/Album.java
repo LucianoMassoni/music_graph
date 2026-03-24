@@ -1,50 +1,45 @@
 package com.luciano.music_graph.model;
 
+
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "artist")
+@Table(name = "album")
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Artist {
+public class Album {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(unique = true, name = "mbid")
     private String mbid;
 
-    @Column(nullable = false)
+    @NotBlank
     private String name;
 
-    private String country;
+    @ManyToOne
+    private Artist artist;
 
-    @Column(name = "debut_year")
-    private Integer debutYear;
-
-    private String type;
-
-    private String disambiguation;
-
-    private String bio;
+    private int year;
 
     @Column(name = "image_url")
     private String imageUrl;
 
-    @Column(name = "created_at")
-    @CreationTimestamp
-    private Instant createdAt;
+    @Column(name = "lastfm_url")
+    private String lastfmUrl;
 
+    @CreationTimestamp
+    @Column(name = "created_at")
+    private Instant createdAt;
 }
