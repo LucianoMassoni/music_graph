@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -68,5 +69,16 @@ public class ArtistService {
         albumService.saveAllAlbumInArtist(albumResponse.topalbums(), artist);
 
         return artist;
+    }
+
+    public Optional<Artist> findByMbid(String mbid) {
+        return artistRepository.findByMbid(mbid);
+    }
+
+    public Artist saveBasic(String name, String mbid){
+        Artist artist = new Artist();
+        artist.setName(name);
+        artist.setMbid(mbid);
+        return artistRepository.save(artist);
     }
 }
