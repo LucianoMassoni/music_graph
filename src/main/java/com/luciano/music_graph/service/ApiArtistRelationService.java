@@ -40,7 +40,7 @@ public class ApiArtistRelationService {
             Artist similarArtist = optionalArtist.orElseGet(() -> artistService.saveBasic(related.name(), related.mbid()));
 
 
-            if (artist.getId().compareTo(similarArtist.getId()) < 0){
+            if (artist.getId().toString().compareTo(similarArtist.getId().toString()) < 0){
                 artistA = artist;
                 artistB = similarArtist;
             } else {
