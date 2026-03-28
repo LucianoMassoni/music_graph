@@ -1,5 +1,6 @@
 package com.luciano.music_graph.mapper;
 
+import com.luciano.music_graph.dto.ArtistNode;
 import com.luciano.music_graph.dto.ShortArtistInfoDto;
 import com.luciano.music_graph.dto.UserArtistResponse;
 import com.luciano.music_graph.model.Artist;
@@ -14,6 +15,10 @@ public interface UserArtistMapper {
 
     default UserArtistResponse toUserArtistResponse(List<Artist> artists){
         return new UserArtistResponse(artists.stream().map(this::toShortArtistInfoDto).toList());
+    }
+
+    default ArtistNode toArtistNode(List<Artist> artists){
+        return new ArtistNode(artists.stream().map(this::toShortArtistInfoDto).toList());
     }
 
 }

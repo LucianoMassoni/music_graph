@@ -3,6 +3,7 @@ package com.luciano.music_graph.service;
 import com.luciano.music_graph.client.LastFmClient;
 import com.luciano.music_graph.dto.ApiArtistRelationResponse;
 import com.luciano.music_graph.dto.ArtistRelatedDto;
+import com.luciano.music_graph.dto.RelationEdge;
 import com.luciano.music_graph.dto.lastfm.LFSimilarArtistResponse;
 import com.luciano.music_graph.mapper.ApiArtistRelationMapper;
 import com.luciano.music_graph.model.ApiArtistRelation;
@@ -87,5 +88,29 @@ public class ApiArtistRelationService {
 
         relation.setWeight(newWeight);
         return relationRepository.save(relation);
+    }
+
+    public RelationEdge getApiArtistRelations(List<Artist> artists){
+
+        Artist artistA;
+        Artist artistB;
+        List<ApiArtistRelation> artistRelations = new ArrayList<>();
+
+        for (int i = 0; i < artists.size() - 1; i++){
+           for (int j = i + 1; j < artists.size(); j++){
+               if (artists.get(i).getId().toString().compareTo(artists.get(j).getId().toString()) < 0){
+                   artistA = artists.get(i);
+                   artistB = artists.get(j);
+               } else {
+                   artistA = artists.get(j);
+                   artistB = artists.get(i);
+               }
+               Optional<ApiArtistRelation> artistRelation = searchSavedRelation(artistA, artistB);
+               artistRelation.ifPresent(artistRelations::add);
+           }
+
+        }
+
+        return mapper.toRelationEdge(artistRelations);
     }
 }
