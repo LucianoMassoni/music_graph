@@ -1,13 +1,12 @@
 package com.luciano.music_graph.mapper;
 
 
-import com.luciano.music_graph.dto.ApiArtistRelatedInfoDto;
-import com.luciano.music_graph.dto.ArtistRelatedDto;
-import com.luciano.music_graph.dto.ShortArtistInfoDto;
+import com.luciano.music_graph.dto.*;
 import com.luciano.music_graph.dto.lastfm.LFSimilarArtistInfo;
 import com.luciano.music_graph.dto.lastfm.LFSimilarArtistResponse;
 import com.luciano.music_graph.model.ApiArtistRelation;
 import com.luciano.music_graph.model.Artist;
+import com.luciano.music_graph.model.UserArtist;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -32,5 +31,13 @@ public interface ApiArtistRelationMapper {
                 ? relation.getArtistB()
                 : relation.getArtistA();
         return new ApiArtistRelatedInfoDto(toShortArtistInfoDto(related), relation.getWeight());
+    }
+
+    @Mapping(target = "artistAMbid", source = "artistA.mbid")
+    @Mapping(target = "artistBMbid", source = "artistB.mbid")
+    ArtistRelationship toArtistRelationship(ApiArtistRelation apiArtistRelation);
+
+    default RelationEdge toRelationEdge(List<ApiArtistRelation> apiArtistRelations){
+        return new RelationEdge(apiArtistRelations.stream().map(this::toArtistRelationship).toList());
     }
 }

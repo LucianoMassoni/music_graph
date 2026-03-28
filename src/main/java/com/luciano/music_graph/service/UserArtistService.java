@@ -2,6 +2,7 @@ package com.luciano.music_graph.service;
 
 import com.luciano.music_graph.client.LastFmClient;
 import com.luciano.music_graph.dto.ApiArtistRelationResponse;
+import com.luciano.music_graph.dto.ArtistNode;
 import com.luciano.music_graph.dto.UserArtistResponse;
 import com.luciano.music_graph.exception.ArtistNotFoundException;
 import com.luciano.music_graph.exception.UserArtistNotFoundException;
@@ -73,5 +74,15 @@ public class UserArtistService {
         List<UserArtist> userArtistList = userArtistRepository.getAllFollowedByUser(user).stream().filter(UserArtist::isFollowed).toList();
 
         return mapper.toUserArtistResponse(userArtistList.stream().map(UserArtist::getArtist).toList());
+    }
+
+    public List<UserArtist> getAllFollowedEntity(User user){
+
+        return userArtistRepository.getAllFollowedByUser(user).stream().filter(UserArtist::isFollowed).toList();
+    }
+
+    public ArtistNode toArtistNode(List<UserArtist> userArtistList){
+
+        return mapper.toArtistNode(userArtistList.stream().map(UserArtist::getArtist).toList());
     }
 }
