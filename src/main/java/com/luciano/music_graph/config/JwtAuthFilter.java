@@ -1,9 +1,11 @@
 package com.luciano.music_graph.config;
 
+import com.luciano.music_graph.dto.ExceptionHandlerDto;
 import com.luciano.music_graph.model.User;
 import com.luciano.music_graph.repository.UserRepository;
 import com.luciano.music_graph.service.JwtService;
 import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.security.auth.message.AuthException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,8 +16,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,6 +29,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return request.getRequestURI().startsWith("/api/auth/");
+    }
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -33,7 +44,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String userId;
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")){
-            filterChain.doFilter(request, response);
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setContentType("application/json");
+            response.getWriter().write(objectMapper.writeValueAsString(
+                    new ExceptionHandlerDto(403, "Forbidden", "Access denied", Instant.now())
+            ));
             return;
         }
 
@@ -43,6 +58,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             userId = jwtService.extractUserId(jwt);
         } catch (ExpiredJwtException ex){
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write(objectMapper.writeValueAsString(
+                    new ExceptionHandlerDto(401, "Unauthorized", "Missing or invalid token", Instant.now())
+            ));
             return;
         }
 
