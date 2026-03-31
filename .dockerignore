@@ -1,0 +1,10 @@
+target/
+.git/
+.gitignore
+.idea
+node_modules
+*.log
+Dockerfile
+docker-compose.yml
+.env
+*.tmp
