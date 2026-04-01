@@ -1,0 +1,2 @@
+create index idx_api_artist_relations_artist_a on api_artist_relations(artist_a_id);
+create index idx_api_artist_relations_artist_b on api_artist_relations(artist_b_id);
