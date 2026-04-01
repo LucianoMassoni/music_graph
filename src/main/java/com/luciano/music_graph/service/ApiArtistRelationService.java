@@ -92,24 +92,7 @@ public class ApiArtistRelationService {
 
     public RelationEdge getApiArtistRelations(List<Artist> artists){
 
-        Artist artistA;
-        Artist artistB;
-        List<ApiArtistRelation> artistRelations = new ArrayList<>();
-
-        for (int i = 0; i < artists.size() - 1; i++){
-           for (int j = i + 1; j < artists.size(); j++){
-               if (artists.get(i).getId().toString().compareTo(artists.get(j).getId().toString()) < 0){
-                   artistA = artists.get(i);
-                   artistB = artists.get(j);
-               } else {
-                   artistA = artists.get(j);
-                   artistB = artists.get(i);
-               }
-               Optional<ApiArtistRelation> artistRelation = searchSavedRelation(artistA, artistB);
-               artistRelation.ifPresent(artistRelations::add);
-           }
-
-        }
+        List<ApiArtistRelation> artistRelations = relationRepository.findRelations(artists.stream().map(Artist::getId).toList());
 
         return mapper.toRelationEdge(artistRelations);
     }

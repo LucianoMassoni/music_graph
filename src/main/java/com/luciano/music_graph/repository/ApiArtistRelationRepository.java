@@ -25,4 +25,13 @@ public interface ApiArtistRelationRepository extends JpaRepository<ApiArtistRela
         order by ar.weight desc
     """)
     List<ApiArtistRelation> findRelatedByMbid(String mbid, Pageable pageable);
+
+
+    @Query("""
+        select ar
+        from ApiArtistRelation as ar
+        where ar.artistA.id in (:artistsIds)
+        and ar.artistB.id in (:artistsIds)
+    """)
+    List<ApiArtistRelation> findRelations(List<UUID> artistsIds);
 }
