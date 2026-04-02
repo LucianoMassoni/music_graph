@@ -4,9 +4,11 @@ import com.luciano.music_graph.dto.ApiArtistRelationResponse;
 import com.luciano.music_graph.dto.ArtistDetail;
 import com.luciano.music_graph.dto.ArtistSearchResult;
 import com.luciano.music_graph.dto.UserArtistResponse;
+import com.luciano.music_graph.dto.userArtistTag.TagsByArtistResponse;
 import com.luciano.music_graph.model.User;
 import com.luciano.music_graph.service.ArtistService;
 import com.luciano.music_graph.service.UserArtistService;
+import com.luciano.music_graph.service.UserArtistTagService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -19,6 +21,7 @@ public class ArtistController {
 
     private final ArtistService artistService;
     private final UserArtistService userArtistService;
+    private final UserArtistTagService userArtistTagService;
 
     @GetMapping("/search")
     public ResponseEntity<ArtistSearchResult> search(@RequestParam String q){
@@ -45,5 +48,10 @@ public class ArtistController {
     @GetMapping("/followed")
     public ResponseEntity<UserArtistResponse> getAllFollowed(@AuthenticationPrincipal User user){
         return ResponseEntity.ok(userArtistService.getAllFollowed(user));
+    }
+
+    @GetMapping("/{mbid}/tags")
+    public ResponseEntity<TagsByArtistResponse> getTagByArtist(@PathVariable String mbid){
+        return ResponseEntity.ok(userArtistTagService.getTagsByArtistMbid(mbid));
     }
 }
