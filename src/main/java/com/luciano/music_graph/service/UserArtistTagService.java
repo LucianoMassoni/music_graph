@@ -26,6 +26,7 @@ public class UserArtistTagService {
     private final ArtistService artistService;
     private final UserTagService userTagService;
     private final UserArtistTagRepository userArtistTagRepository;
+    private final UserArtistRelationService userArtistRelationService;
     private final UserArtistTagMapper mapper;
 
     public UserArtistTagResponse create(User user, UUID tagId, String artistMbid){
@@ -33,9 +34,10 @@ public class UserArtistTagService {
         Artist artist = artistService.findByMbid(artistMbid).orElseThrow(() -> new ArtistNotFoundException(artistMbid));
         UserTag userTag = userTagService.getEntityById(tagId);
 
-
         UserArtistTag userArtistTag = mapper.toEntity(user, artist, userTag);
         userArtistTag = userArtistTagRepository.save(userArtistTag);
+
+        userArtistRelationService.recalculateFromTags(user, artist);
 
         return mapper.toUserArtistTagResponse(userArtistTag);
     }
@@ -45,6 +47,8 @@ public class UserArtistTagService {
         UserArtistTag userArtistTag = userArtistTagRepository.findByTagIdAndArtistMbid(tagId, artistMbid).orElseThrow(() -> new UserArtistTagNotFoundException(
                 "UserArtistTag not found with tagId: " + tagId + " and artist mbid: " + artistMbid
         ));
+
+        userArtistRelationService.recalculateFromTags(userArtistTag.getUser(), userArtistTag.getArtist());
 
         userArtistTagRepository.delete(userArtistTag);
     }
