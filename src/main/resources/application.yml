@@ -4,3 +4,6 @@ spring:
 
 lastfm:
   api-key: ${LAST_FM_API_KEY}
+
+graph:
+  tag-weight: 10
