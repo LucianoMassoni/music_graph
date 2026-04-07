@@ -2,14 +2,12 @@ package com.luciano.music_graph.service;
 
 import com.luciano.music_graph.dto.ApiArtistRelationResponse;
 import com.luciano.music_graph.dto.ArtistRelatedDto;
-import com.luciano.music_graph.dto.RelationEdge;
 import com.luciano.music_graph.dto.lastfm.LFSimilarArtistResponse;
 import com.luciano.music_graph.mapper.ApiArtistRelationMapper;
 import com.luciano.music_graph.model.ApiArtistRelation;
 import com.luciano.music_graph.model.Artist;
 import com.luciano.music_graph.repository.ApiArtistRelationRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -90,15 +88,4 @@ public class ApiArtistRelationService {
         return relationRepository.save(relation);
     }
 
-    public RelationEdge getApiArtistRelations(List<Artist> artists){
-
-        List<ApiArtistRelation> artistRelations = relationRepository.findRelations(artists.stream().map(Artist::getId).toList());
-
-        return mapper.toRelationEdge(artistRelations);
-    }
-
-    public List<ApiArtistRelation> getRelatedArtists(String mbid, int limit){
-
-        return relationRepository.findRelatedByMbid(mbid, PageRequest.of(0, limit));
-    }
 }
