@@ -1,9 +1,7 @@
 package com.luciano.music_graph.service;
 
 import com.luciano.music_graph.model.User;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,7 +14,7 @@ import java.util.Date;
 public class JwtService {
 
     @Value("${jwt.access.secret_key}")
-    private String SECRET_kEY;
+    private String SECRET_KEY;
 
     @Value("${jwt.access.expiration}")
     private Long expirationMs;
@@ -32,7 +30,7 @@ public class JwtService {
     }
 
     public Key getSignInKey(){
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET_kEY);
+        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
@@ -53,7 +51,11 @@ public class JwtService {
     }
 
     public boolean isTokenValid(String token, User user){
-        final String userId = extractUserId(token);
-        return userId.equals(user.getId().toString()) && !isTokenExpired(token);
+        try {
+            final String userId = extractUserId(token);
+            return userId.equals(user.getId().toString()) && !isTokenExpired(token);
+        } catch (JwtException e) {
+            return false;
+        }
     }
 }

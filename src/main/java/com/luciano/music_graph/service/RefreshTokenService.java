@@ -55,14 +55,12 @@ public class RefreshTokenService {
         return refreshTokenRepository.save(refreshToken);
     }
 
-    public RefreshToken verifyExpiration(RefreshToken token){
+    public void verifyExpiration(RefreshToken token){
 
         if (token.getExpiresAt().isBefore(Instant.now())){
             refreshTokenRepository.delete(token);
             throw new RefreshTokenExpirationException();
         }
-
-        return token;
     }
 
     public RefreshToken findByToken(String token){
