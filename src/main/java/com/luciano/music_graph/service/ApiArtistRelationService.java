@@ -22,7 +22,7 @@ public class ApiArtistRelationService {
     private final ApiArtistRelationMapper mapper;
     private final ArtistService artistService;
 
-    public ApiArtistRelationResponse buidApiRelations(Artist artist, LFSimilarArtistResponse similarArtistResponse){
+    public ApiArtistRelationResponse buildApiRelations(Artist artist, LFSimilarArtistResponse similarArtistResponse){
 
         Artist artistA;
         Artist artistB;
@@ -37,7 +37,6 @@ public class ApiArtistRelationService {
             Optional<Artist> optionalArtist = artistService.findByMbid(related.mbid());
 
             Artist similarArtist = optionalArtist.orElseGet(() -> artistService.saveBasic(related.name(), related.mbid()));
-
 
             if (artist.getId().toString().compareTo(similarArtist.getId().toString()) < 0){
                 artistA = artist;

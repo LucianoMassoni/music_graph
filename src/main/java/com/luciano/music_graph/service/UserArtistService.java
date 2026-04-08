@@ -54,7 +54,7 @@ public class UserArtistService {
             userArtistRepository.save(userArtist);
         }
 
-        return apiArtistRelationService.buidApiRelations(artist, lastFmClient.getSimilar(mbid));
+        return apiArtistRelationService.buildApiRelations(artist, lastFmClient.getSimilar(mbid));
     }
 
 
