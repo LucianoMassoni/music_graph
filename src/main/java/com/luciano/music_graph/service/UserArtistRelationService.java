@@ -53,7 +53,7 @@ public class UserArtistRelationService {
             // si es cero lo elimina
             if (weight.equals(0)){
                 userArtistRelationRepository.delete(userArtistRelation);
-                return;
+                continue;
             }
 
             userArtistRelation.setWeight(weight);
