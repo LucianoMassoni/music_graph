@@ -41,13 +41,17 @@ public class User implements UserDetails {
     @Column(unique = true, nullable = false)
     private String email;
 
-    @NotBlank
     @Column(name = "password_hash")
     private String password;
 
     @NotNull
     @Enumerated(value = EnumType.STRING)
     private Role role;
+
+    @NotNull
+    @Enumerated(value = EnumType.STRING)
+    @Column(name = "auth_provider")
+    private AuthProvider provider;
 
     @CreationTimestamp
     @Column(name = "created_at")

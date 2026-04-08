@@ -3,6 +3,7 @@ package com.luciano.music_graph.service;
 import com.luciano.music_graph.dto.AuthTokens;
 import com.luciano.music_graph.dto.LoginRequest;
 import com.luciano.music_graph.dto.RegisterRequest;
+import com.luciano.music_graph.model.AuthProvider;
 import com.luciano.music_graph.model.RefreshToken;
 import com.luciano.music_graph.model.User;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +39,11 @@ public class AuthService {
                 )
         );
 
-        User user = userService.access(request);
+        User user = userService.getUserEntityByEmail(request.email());
+
+        if(user.getProvider() != AuthProvider.LOCAL) {
+            throw new RuntimeException("Use OAuth login for this account");
+        }
 
         RefreshToken refreshToken = refreshTokenService.create(user.getId());
 
