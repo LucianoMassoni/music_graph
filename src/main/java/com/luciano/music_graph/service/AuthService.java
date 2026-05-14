@@ -3,6 +3,7 @@ package com.luciano.music_graph.service;
 import com.luciano.music_graph.dto.AuthTokens;
 import com.luciano.music_graph.dto.LoginRequest;
 import com.luciano.music_graph.dto.RegisterRequest;
+import com.luciano.music_graph.exception.InvalidCredentialsException;
 import com.luciano.music_graph.model.AuthProvider;
 import com.luciano.music_graph.model.RefreshToken;
 import com.luciano.music_graph.model.User;
@@ -32,12 +33,16 @@ public class AuthService {
 
     public AuthTokens login(LoginRequest request){
 
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.email(),
-                        request.password()
-                )
-        );
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.email(),
+                            request.password()
+                    )
+            );
+        } catch (Exception e){
+           throw new InvalidCredentialsException();
+        }
 
         User user = userService.getUserEntityByEmail(request.email());
 

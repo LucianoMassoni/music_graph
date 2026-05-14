@@ -44,11 +44,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String userId;
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")){
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            response.setContentType("application/json");
-            response.getWriter().write(objectMapper.writeValueAsString(
-                    new ExceptionHandlerDto(403, "Forbidden", "Access denied", Instant.now())
-            ));
+//            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+//            response.setContentType("application/json");
+//            response.getWriter().write(objectMapper.writeValueAsString(
+//                    new ExceptionHandlerDto(403, "Forbidden", "Access denied", Instant.now())
+//            ));
+            filterChain.doFilter(request, response);
             return;
         }
 
@@ -56,7 +57,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         try {
             userId = jwtService.extractUserId(jwt);
-        } catch (ExpiredJwtException ex){
+        } catch (Exception ex){
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             response.getWriter().write(objectMapper.writeValueAsString(
@@ -66,13 +67,19 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null){
-            Optional<User> user = userRepository.findById(UUID.fromString(userId));
+            Optional<User> userOpt = userRepository.findById(UUID.fromString(userId));
 
-            if (jwtService.isTokenValid(jwt, user.get())){
+            if (userOpt.isEmpty()){
+                filterChain.doFilter(request, response);
+                return;
+            }
+            User user = userOpt.get();
+
+            if (jwtService.isTokenValid(jwt, user)){
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        user.get(),
+                        user,
                         null,
-                        user.get().getAuthorities()
+                        user.getAuthorities()
                 );
 
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
