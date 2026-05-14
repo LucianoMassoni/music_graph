@@ -32,8 +32,8 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
-    @ExceptionHandler(RefreshTokenExpirationException.class)
-    public ResponseEntity<ExceptionHandlerDto> refreshTokenExpiration(RefreshTokenExpirationException ex){
+    @ExceptionHandler({RefreshTokenExpirationException.class, InvalidCredentialsException.class})
+    public ResponseEntity<ExceptionHandlerDto> unauthorizedExpiration(RuntimeException ex){
         return buildResponse(HttpStatus.UNAUTHORIZED, ex.getMessage());
     }
 
