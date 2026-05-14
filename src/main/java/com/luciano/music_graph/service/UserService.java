@@ -2,8 +2,10 @@ package com.luciano.music_graph.service;
 
 import com.luciano.music_graph.dto.LoginRequest;
 import com.luciano.music_graph.dto.RegisterRequest;
+import com.luciano.music_graph.dto.user.UserDto;
 import com.luciano.music_graph.exception.EmailNotFoundException;
 import com.luciano.music_graph.exception.UserAlreadyExistsException;
+import com.luciano.music_graph.exception.UserNotFoundException;
 import com.luciano.music_graph.exception.UsernameAlreadyExistsException;
 import com.luciano.music_graph.mapper.UserMapper;
 import com.luciano.music_graph.model.AuthProvider;
@@ -15,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -82,5 +85,9 @@ public class UserService {
         u.setRole(Role.USER);
 
         return userRepository.save(u);
+    }
+
+    public UserDto getMe(User user){
+        return mapper.toUserDto(user);
     }
 }
