@@ -34,4 +34,25 @@ public interface ApiArtistRelationRepository extends JpaRepository<ApiArtistRela
         and ar.artistB.id in (:artistsIds)
     """)
     List<ApiArtistRelation> findRelations(List<UUID> artistsIds);
+
+    @Query("""
+    select
+        artist_a.mbid as artist_a_mbid,
+        artist_b.mbid as artist_b_mbid,
+        aar.weight
+    
+    from ApiArtistRelation aar
+    
+    join Artist artist_a
+        on artist_a.id = aar.artistA.id
+    
+    join Artist artist_b
+        on artist_b.id = aar.artistB.id
+    
+    where (
+        artist_a.mbid = :mbid
+        or artist_b.mbid = :mbid
+    ) and aar.weight >= 50
+    """)
+    List<Object[]> getAllRelated(String mbid);
 }

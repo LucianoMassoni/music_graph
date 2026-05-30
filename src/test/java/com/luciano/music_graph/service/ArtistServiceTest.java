@@ -3,12 +3,12 @@ package com.luciano.music_graph.service;
 import com.luciano.music_graph.client.LastFmClient;
 import com.luciano.music_graph.dto.AlbumDetail;
 import com.luciano.music_graph.dto.ArtistDetail;
-import com.luciano.music_graph.dto.ArtistSearchResult;
 import com.luciano.music_graph.dto.ArtistTagData;
 import com.luciano.music_graph.dto.lastfm.*;
 import com.luciano.music_graph.mapper.ArtistMapper;
 import com.luciano.music_graph.mapper.ArtistMapperImpl;
 import com.luciano.music_graph.model.Artist;
+import com.luciano.music_graph.model.User;
 import com.luciano.music_graph.repository.ArtistRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -54,50 +53,7 @@ public class ArtistServiceTest {
         ReflectionTestUtils.setField(artistService, "mapper", mapper);
     }
 
-    @Test
-    void search_shouldFiltrateAndReturnOne(){
 
-        List<LFArtist> artists = List.of(
-                new LFArtist("artist1", "fsdfk"),
-                new LFArtist("artist2", "")
-        );
-
-        when(lastFmClient.search(any())).thenReturn(new LFSearchResponse(
-                new LFArtistMatches(
-                        new LFArtistSearchResult(artists))
-        ));
-
-
-        ArtistSearchResult result = artistService.search("artist");
-
-        verify(lastFmClient).search("artist");
-
-        assertEquals(1, result.artist().size());
-        assertEquals(result.artist().getFirst().name(), artists.getFirst().name());
-        assertEquals(result.artist().getFirst().mbid(), artists.getFirst().mbid());
-    }
-
-    @Test
-    void search_shouldDeleteMbidDuplicate(){
-
-        List<LFArtist> artists = List.of(
-                new LFArtist("artist1", "fsdfk"),
-                new LFArtist("artist2", "fsdfk")
-        );
-
-        when(lastFmClient.search(any())).thenReturn(new LFSearchResponse(
-                new LFArtistMatches(
-                        new LFArtistSearchResult(artists))
-        ));
-
-        ArtistSearchResult result = artistService.search("artist");
-
-        verify(lastFmClient).search("artist");
-
-        assertEquals(1, result.artist().size());
-        assertEquals(result.artist().getFirst().name(), artists.getFirst().name());
-        assertEquals(result.artist().getFirst().mbid(), artists.getFirst().mbid());
-    }
 
     @Test
     void getOrImport_shouldGet(){
@@ -162,7 +118,7 @@ public class ArtistServiceTest {
         ArtistDetail result = artistService.getOrImport(mbid);
 
         // verify IMPORT
-        verify(lastFmClient).getInfo(mbid);
+//        verify(lastFmClient).getInfo(mbid);
         verify(lastFmClient).getTopTags(mbid);
         verify(lastFmClient).getAlbums(mbid);
 

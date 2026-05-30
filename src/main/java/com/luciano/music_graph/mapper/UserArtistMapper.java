@@ -1,10 +1,13 @@
 package com.luciano.music_graph.mapper;
 
 import com.luciano.music_graph.dto.ArtistNode;
+import com.luciano.music_graph.dto.ArtistSearchData;
 import com.luciano.music_graph.dto.ShortArtistInfoDto;
 import com.luciano.music_graph.dto.UserArtistResponse;
+import com.luciano.music_graph.dto.lastfm.LFArtist;
 import com.luciano.music_graph.model.Artist;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import java.util.List;
 
@@ -21,4 +24,8 @@ public interface UserArtistMapper {
         return new ArtistNode(artists.stream().map(this::toShortArtistInfoDto).toList());
     }
 
+    @Mapping(target = "name", source = "lfArtist.name")
+    @Mapping(target = "id", source = "lfArtist.mbid")
+    @Mapping(target = "followed", source = "followed")
+    ArtistSearchData toArtistSearchData(LFArtist lfArtist, boolean followed);
 }

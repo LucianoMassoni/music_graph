@@ -25,4 +25,32 @@ public interface UserArtistRepository extends JpaRepository<UserArtist, UUID> {
         where ua.user = :u and ua.followed = true
     """)
     List<UserArtist> getAllFollowedByUser(@Param("u") User user);
+
+    @Query("""
+        select ua.followed
+        from UserArtist as ua
+        where ua.user = :user and ua.artist.mbid = :mbid
+    """)
+    Optional<Boolean> isFollowed(User user, String mbid);
+
+    @Query("""
+    select distinct
+        related_artist.name,
+        related_artist.mbid,
+        coalesce(ua.followed, false) as followed
+    from Artist base_artist
+    join ApiArtistRelation aar
+        on base_artist.id in (aar.artistA.id, aar.artistB.id)
+    join Artist related_artist
+        on related_artist.id = case
+            when aar.artistA.id = base_artist.id then aar.artistB.id
+            else aar.artistA.id
+        end
+    left join UserArtist ua
+        on ua.artist.id = related_artist.id
+        and ua.user = :user
+    where base_artist = :artist
+    and aar.weight >= 50
+    """)
+    List<Object[]> getAllNodesByUserAndArtist(User user, Artist artist);
 }

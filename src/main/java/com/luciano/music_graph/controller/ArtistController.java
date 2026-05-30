@@ -1,6 +1,5 @@
 package com.luciano.music_graph.controller;
 
-import com.luciano.music_graph.dto.ApiArtistRelationResponse;
 import com.luciano.music_graph.dto.ArtistDetail;
 import com.luciano.music_graph.dto.ArtistSearchResult;
 import com.luciano.music_graph.dto.UserArtistResponse;
@@ -24,8 +23,8 @@ public class ArtistController {
     private final UserArtistTagService userArtistTagService;
 
     @GetMapping("/search")
-    public ResponseEntity<ArtistSearchResult> search(@RequestParam String q){
-        return ResponseEntity.ok(artistService.search(q));
+    public ResponseEntity<ArtistSearchResult> search(@AuthenticationPrincipal User user, @RequestParam String q){
+        return ResponseEntity.ok(userArtistService.search(user, q));
     }
 
     @GetMapping("/{mbid}")
@@ -34,8 +33,10 @@ public class ArtistController {
     }
 
     @PostMapping("/{mbid}/follow")
-    public ResponseEntity<ApiArtistRelationResponse> followArtist(@AuthenticationPrincipal User user, @PathVariable String mbid){
-        return ResponseEntity.ok(userArtistService.followArtist(user, mbid));
+    public ResponseEntity<Void> followArtist(@AuthenticationPrincipal User user, @PathVariable String mbid){
+
+        userArtistService.followArtist(user, mbid);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{mbid}/follow")
