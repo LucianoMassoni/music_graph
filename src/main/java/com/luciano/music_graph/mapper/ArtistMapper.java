@@ -2,7 +2,6 @@ package com.luciano.music_graph.mapper;
 
 
 import com.luciano.music_graph.dto.*;
-import com.luciano.music_graph.dto.lastfm.LFArtist;
 import com.luciano.music_graph.dto.lastfm.LFArtistInfo;
 import com.luciano.music_graph.dto.lastfm.LFImageItem;
 import com.luciano.music_graph.model.Artist;
@@ -13,8 +12,6 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface ArtistMapper {
-
-    ArtistSearchData toArtistSearchData(LFArtist lfArtist);
 
     @Mapping(target = "bio", source = "bio.content")
     @Mapping(target = "imageUrl", expression = "java(extractImage(lfArtistInfo.image()))")

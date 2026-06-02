@@ -1,9 +1,10 @@
 package com.luciano.music_graph.service;
 
 import com.luciano.music_graph.client.LastFmClient;
-import com.luciano.music_graph.dto.ApiArtistRelationResponse;
-import com.luciano.music_graph.dto.ArtistNode;
-import com.luciano.music_graph.dto.UserArtistResponse;
+import com.luciano.music_graph.dto.*;
+import com.luciano.music_graph.dto.graph.Node;
+import com.luciano.music_graph.dto.lastfm.LFSearchResponse;
+import com.luciano.music_graph.dto.lastfm.LFSimilarArtistResponse;
 import com.luciano.music_graph.exception.ArtistNotFoundException;
 import com.luciano.music_graph.exception.UserArtistNotFoundException;
 import com.luciano.music_graph.mapper.UserArtistMapper;
@@ -16,7 +17,10 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -43,7 +47,7 @@ public class UserArtistService {
         );
     }
 
-    public ApiArtistRelationResponse followArtist(User user, String mbid){
+    public void followArtist(User user, String mbid){
 
         Artist artist = artistService.findByMbid(mbid).orElseThrow(() -> new ArtistNotFoundException(mbid));
 
@@ -53,8 +57,6 @@ public class UserArtistService {
             userArtist.setFollowed(true);
             userArtistRepository.save(userArtist);
         }
-
-        return apiArtistRelationService.buildApiRelations(artist, lastFmClient.getSimilar(mbid));
     }
 
 
@@ -76,13 +78,84 @@ public class UserArtistService {
         return mapper.toUserArtistResponse(userArtistList.stream().map(UserArtist::getArtist).toList());
     }
 
-    public List<UserArtist> getAllFollowedEntity(User user){
+    private boolean isFollowed(User user, String mbid){
 
-        return userArtistRepository.getAllFollowedByUser(user).stream().filter(UserArtist::isFollowed).toList();
+        return userArtistRepository.isFollowed(user, mbid).orElse(false);
     }
 
-    public ArtistNode toArtistNode(List<UserArtist> userArtistList){
+    public ArtistSearchResult search(User user, String name){
 
-        return mapper.toArtistNode(userArtistList.stream().map(UserArtist::getArtist).toList());
+        LFSearchResponse response = lastFmClient.search(name);
+
+        Set<String> seen = new HashSet<>();
+
+        List<ArtistSearchData> lista = response
+                .results()
+                .artistmatches()
+                .artist().stream()
+                .filter(artist -> !artist.mbid().isEmpty()) // Last.fm puede devolver artistas duplicados o sin MBID
+                .filter(artist -> seen.add(artist.mbid()))
+                .map(artist -> mapper.toArtistSearchData(artist, this.isFollowed(user, artist.mbid())))
+                .toList();
+
+        return new ArtistSearchResult(lista);
+    }
+
+    public List<Node> getArtistsAndSimilar(User user, String mbid){
+
+        Artist artist = artistService.findByMbid(mbid).orElseThrow(() -> new ArtistNotFoundException(mbid));
+        LFSimilarArtistResponse similar = lastFmClient.getSimilar(mbid);
+
+        UserArtist userArtist = userArtistRepository.findByUserAndArtist(user, artist).orElse(null);
+
+        // crea las relaciones y persiste en db.
+        apiArtistRelationService.buildApiRelations(artist, similar);
+
+        List<Node> nodes = getNodes(userArtistRepository.getAllNodesByUserAndArtist(user, artist));
+
+        boolean followed = userArtist != null && userArtist.isFollowed();
+
+        nodes.addFirst(new Node(
+                artist.getName(),
+                artist.getMbid(),
+                followed
+        ));
+
+        return nodes;
+    }
+
+    private List<Node> getNodes(List<Object[]> response){
+
+        List<Node> nodeList = new ArrayList<>();
+
+        for (Object[] row : response){
+            String name = row[0].toString();
+            String mbid = row[1].toString();
+            boolean followed = (boolean) row[2];
+
+            nodeList.add(new Node(
+                    name,
+                    mbid,
+                    followed
+            ));
+        }
+
+        return nodeList;
+    }
+
+    public List<Node> getFollowedNodes(User user){
+        List<UserArtist> userArtistList = userArtistRepository.getAllFollowedByUser(user).stream().filter(UserArtist::isFollowed).toList();
+
+        List<Node> nodes = new ArrayList<>();
+
+        userArtistList.forEach(userArtist -> {
+            nodes.add(new Node(
+                    userArtist.getArtist().getName(),
+                    userArtist.getArtist().getMbid(),
+                    userArtist.isFollowed()
+            ));
+        });
+
+        return nodes;
     }
 }

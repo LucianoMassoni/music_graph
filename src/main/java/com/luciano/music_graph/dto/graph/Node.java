@@ -1,6 +1,6 @@
-package com.luciano.music_graph.dto;
+package com.luciano.music_graph.dto.graph;
 
-public record ArtistSearchData(
+public record Node(
         String name,
         String id,
         boolean followed

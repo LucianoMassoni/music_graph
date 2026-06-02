@@ -1,6 +1,7 @@
 package com.luciano.music_graph.service;
 
 
+import com.luciano.music_graph.dto.graph.Link;
 import com.luciano.music_graph.mapper.UserArtistRelationMapper;
 import com.luciano.music_graph.model.Artist;
 import com.luciano.music_graph.model.User;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -67,6 +69,29 @@ public class UserArtistRelationService {
 
         return userArtistRelationRepository.getEntityByUserAndArtist(user, artistA, artistB)
                 .orElseGet(() -> mapper.toEntity(user, artistA, artistB));
+    }
+
+    public List<Link> getLinks(User user, String mbid){
+
+        List<Link> links = new ArrayList<>();
+
+        List<Object[]> relations = userArtistRelationRepository.getAllRelations(user, mbid);
+
+        for (Object[] row : relations){
+            String artistAMbid = row[0].toString();
+            String artistBMbid = row[1].toString();
+            int weight = (int) row[2];
+            boolean active = (boolean) row[3];
+
+            links.add(new Link(
+                    artistAMbid,
+                    artistBMbid,
+                    weight,
+                    active
+            ));
+        }
+
+        return links;
     }
 
 }
