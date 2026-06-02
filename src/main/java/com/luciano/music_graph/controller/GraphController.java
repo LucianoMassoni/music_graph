@@ -1,7 +1,6 @@
-package com.luciano.music_graph.controller;
+ package com.luciano.music_graph.controller;
 
-import com.luciano.music_graph.dto.DiscoveryGraphResponse;
-import com.luciano.music_graph.dto.LibraryGraphResponse;
+import com.luciano.music_graph.dto.graph.GraphResponse;
 import com.luciano.music_graph.model.User;
 import com.luciano.music_graph.service.GraphService;
 import lombok.RequiredArgsConstructor;
@@ -17,12 +16,12 @@ public class GraphController {
     private final GraphService graphService;
 
     @GetMapping("/library")
-    public ResponseEntity<LibraryGraphResponse> library(@AuthenticationPrincipal User user){
+    public ResponseEntity<GraphResponse> library(@AuthenticationPrincipal User user){
         return ResponseEntity.ok(graphService.getLibraryGraph(user));
     }
 
     @GetMapping("/discovery/{mbid}")
-    public ResponseEntity<DiscoveryGraphResponse> discovery(@AuthenticationPrincipal User user, @PathVariable String mbid, @RequestParam int limit){
-        return ResponseEntity.ok(graphService.getDiscoveryGraph(user, mbid, limit));
+    public ResponseEntity<GraphResponse> discovery(@AuthenticationPrincipal User user, @PathVariable String mbid){
+        return ResponseEntity.ok(graphService.getDiscoveryGraph(user, mbid));
     }
 }
