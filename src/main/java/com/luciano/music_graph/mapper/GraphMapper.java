@@ -7,5 +7,5 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface GraphMapper {
 
-    ShortArtistInfoDto toShortArtistInfoDto(Artist artist);
+    ShortArtistInfoDto toShortArtistInfoDto(Artist artist, boolean isFollowed);
 }
