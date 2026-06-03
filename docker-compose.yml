@@ -35,9 +35,12 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       JWT_ACCESS_EXPIRATION: ${JWT_ACCESS_EXPIRATION}
       JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION}
-      LASTFM_API_KEY: ${LASTFM_API_KEY}
-      LASTFM_API_SECRET: ${LASTFM_API_SECRET}
+      LASTFM_API_KEY: ${LAST_FM_API_KEY}
+      LASTFM_API_SECRET: ${LAST_FM_API_SECRET}
+      GOOGLE_ID: ${GOOGLE_ID}
+      GOOGLE_SECRET: ${GOOGLE_SECRET}
 
 volumes:
   postgres_data:
     name: music_graph_postgres_data
+    external: true
