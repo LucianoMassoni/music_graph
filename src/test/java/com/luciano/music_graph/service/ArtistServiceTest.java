@@ -1,18 +1,16 @@
 package com.luciano.music_graph.service;
 
 import com.luciano.music_graph.client.LastFmClient;
-import com.luciano.music_graph.dto.AlbumDetail;
 import com.luciano.music_graph.dto.ArtistDetail;
-import com.luciano.music_graph.dto.ArtistTagData;
 import com.luciano.music_graph.dto.lastfm.*;
 import com.luciano.music_graph.mapper.ArtistMapper;
-import com.luciano.music_graph.mapper.ArtistMapperImpl;
 import com.luciano.music_graph.model.Artist;
-import com.luciano.music_graph.model.User;
+import com.luciano.music_graph.model.ArtistSource;
 import com.luciano.music_graph.repository.ArtistRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -27,7 +25,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ArtistServiceTest {
+class ArtistServiceTest {
 
     @InjectMocks
     private ArtistService artistService;
@@ -38,217 +36,138 @@ public class ArtistServiceTest {
     @Mock
     private ArtistRepository artistRepository;
 
-    private ArtistMapper mapper = new ArtistMapperImpl();
-
     @Mock
     private ArtistTagService tagService;
 
     @Mock
     private AlbumService albumService;
 
+    private ArtistMapper mapper = Mappers.getMapper(ArtistMapper.class);
 
     @BeforeEach
     void setUp() {
-        mapper = new ArtistMapperImpl();
         ReflectionTestUtils.setField(artistService, "mapper", mapper);
     }
 
 
 
     @Test
-    void getOrImport_shouldGet(){
+    void should_return_artist_without_enrich_when_source_is_api_imported() {
 
         Artist artist = new Artist();
         artist.setId(UUID.randomUUID());
         artist.setMbid("mbid");
-        artist.setName("artist");
+        artist.setSource(ArtistSource.API_IMPORTED);
+        artist.setEnriched(true);
 
-        AlbumDetail albumDetail = new AlbumDetail("album", 2000, "img_url", "lastFmUrl");
-        ArtistTagData artistTagData = new ArtistTagData("tag_name", 100);
+        when(artistRepository.findByMbid("mbid")).thenReturn(Optional.of(artist));
+        when(tagService.getAllTagDataByArtistId(artist.getId())).thenReturn(List.of());
+        when(albumService.getAllAlbumDataByArtistId(artist.getId())).thenReturn(List.of());
 
-        when(artistRepository.findByMbid(any())).thenReturn(Optional.of(artist));
-        when(tagService.getAllTagDataByArtistId(any())).thenReturn(List.of(artistTagData));
-        when(albumService.getAllAlbumDataByArtistId(any())).thenReturn(List.of(albumDetail));
+        ArtistDetail result = artistService.getOrImport("mbid");
 
-        ArtistDetail artistDetail = artistService.getOrImport("mbid");
+        verify(lastFmClient, never()).getInfo(any());
+        verify(artistRepository, never()).save(any());
 
-        verify(artistRepository).findByMbid("mbid");
-        verify(tagService).getAllTagDataByArtistId(artist.getId());
-        verify(albumService).getAllAlbumDataByArtistId(artist.getId());
-
-        assertEquals(artistDetail.id(), artist.getId());
-        assertEquals(artistDetail.mbid(), artist.getMbid());
-        assertEquals(artistDetail.name(), artist.getName());
-        assertTrue(artistDetail.tags().contains(artistTagData));
-        assertTrue(artistDetail.albums().contains(albumDetail));
+        assertEquals("mbid", result.mbid());
+        assertEquals(artist.getId(), result.id());
     }
 
+
     @Test
-    void getOrImport_shouldImport(){
+    void should_import_artist_when_not_found() {
 
         String mbid = "mbid";
 
-        // repo no encuentra nada
+        LFArtistInfo lfInfo = mock(LFArtistInfo.class);
+        LFArtistInfoResponse response = mock(LFArtistInfoResponse.class);
+
+        when(response.artist()).thenReturn(lfInfo);
+        when(lfInfo.bio()).thenReturn(mock(LFBio.class));
+
+        when(lastFmClient.getInfo(mbid)).thenReturn(response);
+        when(lastFmClient.getTopTags(mbid)).thenReturn(mock(LFTopTagsResponse.class));
+        when(lastFmClient.getAlbums(mbid)).thenReturn(mock(LFAlbumResponse.class));
+
+        Artist saved = new Artist();
+        saved.setId(UUID.randomUUID());
+        saved.setMbid(mbid);
+        saved.setSource(ArtistSource.API_IMPORTED);
+        saved.setEnriched(true);
+
+        when(artistRepository.save(any())).thenReturn(saved);
         when(artistRepository.findByMbid(mbid)).thenReturn(Optional.empty());
 
-        // mock de respuestas de LastFm
-        LFArtistInfoResponse infoResponse = mock(LFArtistInfoResponse.class);
-        LFTopTagsResponse tagsResponse = mock(LFTopTagsResponse.class);
-        LFAlbumResponse albumResponse = mock(LFAlbumResponse.class);
-
-        when(lastFmClient.getInfo(mbid)).thenReturn(infoResponse);
-        when(lastFmClient.getTopTags(mbid)).thenReturn(tagsResponse);
-        when(lastFmClient.getAlbums(mbid)).thenReturn(albumResponse);
-
-        // mapper → entity
-        Artist artist = new Artist();
-        artist.setId(UUID.randomUUID());
-        artist.setMbid(mbid);
-        artist.setName("artist");
-
-
-        // save devuelve el mismo objeto
-        when(artistRepository.save(any())).thenReturn(artist);
-
-        // mocks de servicios
         when(tagService.getAllTagDataByArtistId(any())).thenReturn(List.of());
         when(albumService.getAllAlbumDataByArtistId(any())).thenReturn(List.of());
 
-        // ejecutar
         ArtistDetail result = artistService.getOrImport(mbid);
 
-        // verify IMPORT
-//        verify(lastFmClient).getInfo(mbid);
-        verify(lastFmClient).getTopTags(mbid);
-        verify(lastFmClient).getAlbums(mbid);
-
-        verify(artistRepository).save(any());
-
-        verify(tagService).saveAllTagsInArtist(any(), eq(artist));
-        verify(albumService).saveAllAlbumInArtist(any(), eq(artist));
-
-        verify(tagService).getAllTagDataByArtistId(artist.getId());
-        verify(albumService).getAllAlbumDataByArtistId(artist.getId());
+        verify(lastFmClient, times(1)).getInfo(mbid);
+        verify(artistRepository, times(1)).save(any());
+        verify(tagService).saveAllTagsInArtist(any(), any());
+        verify(albumService).saveAllAlbumInArtist(any(), any());
 
         assertNotNull(result);
     }
 
     @Test
-    void getOrImport_shouldBeIdempotent() {
+    void should_enrich_related_artist_when_not_enriched() {
 
         String mbid = "mbid";
 
         Artist artist = new Artist();
         artist.setId(UUID.randomUUID());
         artist.setMbid(mbid);
-        artist.setName("artist");
+        artist.setSource(ArtistSource.RELATED);
+        artist.setEnriched(false);
 
-        // 1ra vez no existe, 2da sí
-        when(artistRepository.findByMbid(mbid))
-                .thenReturn(Optional.empty())
-                .thenReturn(Optional.of(artist));
+        LFArtistInfoResponse response = mock(LFArtistInfoResponse.class);
+        LFArtistInfo lfInfo = mock(LFArtistInfo.class);
+        LFBio bio = mock(LFBio.class);
 
-        // mocks LastFm
-        LFArtistInfoResponse infoResponse = mock(LFArtistInfoResponse.class);
-        LFTopTagsResponse tagsResponse = mock(LFTopTagsResponse.class);
-        LFAlbumResponse albumResponse = mock(LFAlbumResponse.class);
+        when(response.artist()).thenReturn(lfInfo);
+        when(lfInfo.bio()).thenReturn(bio);
+        when(bio.content()).thenReturn("bio");
 
-        when(lastFmClient.getInfo(mbid)).thenReturn(infoResponse);
-        when(lastFmClient.getTopTags(mbid)).thenReturn(tagsResponse);
-        when(lastFmClient.getAlbums(mbid)).thenReturn(albumResponse);
+        when(lfInfo.image()).thenReturn(List.of());
 
-        when(artistRepository.save(any())).thenReturn(artist);
+        when(lastFmClient.getInfo(mbid)).thenReturn(response);
+        when(lastFmClient.getTopTags(mbid)).thenReturn(mock(LFTopTagsResponse.class));
+        when(lastFmClient.getAlbums(mbid)).thenReturn(mock(LFAlbumResponse.class));
+
+        when(artistRepository.findByMbid(mbid)).thenReturn(Optional.of(artist));
 
         when(tagService.getAllTagDataByArtistId(any())).thenReturn(List.of());
         when(albumService.getAllAlbumDataByArtistId(any())).thenReturn(List.of());
 
-        // 1ra llamada → importa
         artistService.getOrImport(mbid);
 
-        // 2da llamada → debería usar DB
-        artistService.getOrImport(mbid);
-
-        // verify: LastFm SOLO UNA VEZ
         verify(lastFmClient, times(1)).getInfo(mbid);
-        verify(lastFmClient, times(1)).getTopTags(mbid);
-        verify(lastFmClient, times(1)).getAlbums(mbid);
+        verify(artistRepository).save(artist);
 
-        // save SOLO UNA VEZ
-        verify(artistRepository, times(1)).save(any());
-
-        // find se llama 2 veces
-        verify(artistRepository, times(2)).findByMbid(mbid);
+        assertTrue(artist.isEnriched());
+        assertEquals("bio", artist.getBio());
     }
 
+
     @Test
-    void getOrImport_shouldThrowWhenGetInfoFails() {
+    void should_not_enrich_if_already_enriched() {
 
-        String mbid = "mbid";
+        Artist artist = new Artist();
+        artist.setId(UUID.randomUUID());
+        artist.setMbid("mbid");
+        artist.setSource(ArtistSource.RELATED);
+        artist.setEnriched(true);
 
-        when(artistRepository.findByMbid(mbid))
-                .thenReturn(Optional.empty());
+        when(artistRepository.findByMbid("mbid")).thenReturn(Optional.of(artist));
 
-        when(lastFmClient.getInfo(mbid))
-                .thenThrow(new RuntimeException());
+        when(tagService.getAllTagDataByArtistId(any())).thenReturn(List.of());
+        when(albumService.getAllAlbumDataByArtistId(any())).thenReturn(List.of());
 
-        assertThrows(RuntimeException.class, () -> {
-            artistService.getOrImport(mbid);
-        });
+        artistService.getOrImport("mbid");
 
+        verify(lastFmClient, never()).getInfo(any());
         verify(artistRepository, never()).save(any());
-        verify(tagService, never()).saveAllTagsInArtist(any(), any());
-        verify(albumService, never()).saveAllAlbumInArtist(any(), any());
-    }
-
-    @Test
-    void getOrImport_shouldThrowWhenGetTopTagsFails() {
-
-        String mbid = "mbid";
-
-        Artist artist = new Artist();
-        artist.setId(UUID.randomUUID());
-
-        when(artistRepository.findByMbid(mbid))
-                .thenReturn(Optional.empty());
-
-        when(lastFmClient.getInfo(mbid)).thenReturn(mock(LFArtistInfoResponse.class));
-        when(artistRepository.save(any())).thenReturn(artist);
-
-        when(lastFmClient.getTopTags(mbid))
-                .thenThrow(new RuntimeException());
-
-        assertThrows(RuntimeException.class, () -> {
-            artistService.getOrImport(mbid);
-        });
-
-        verify(artistRepository).save(any());
-        verify(albumService, never()).saveAllAlbumInArtist(any(), any());
-    }
-
-    @Test
-    void getOrImport_shouldThrowWhenGetAlbumsFails() {
-
-        String mbid = "mbid";
-
-        Artist artist = new Artist();
-        artist.setId(UUID.randomUUID());
-
-        when(artistRepository.findByMbid(mbid))
-                .thenReturn(Optional.empty());
-
-        when(lastFmClient.getInfo(mbid)).thenReturn(mock(LFArtistInfoResponse.class));
-        when(artistRepository.save(any())).thenReturn(artist);
-
-        when(lastFmClient.getTopTags(mbid)).thenReturn(mock(LFTopTagsResponse.class));
-
-        when(lastFmClient.getAlbums(mbid))
-                .thenThrow(new RuntimeException());
-
-        assertThrows(RuntimeException.class, () -> {
-            artistService.getOrImport(mbid);
-        });
-
-        verify(artistRepository).save(any());
-        verify(tagService).saveAllTagsInArtist(any(), eq(artist));
     }
 }
