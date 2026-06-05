@@ -53,11 +53,6 @@ public class UserArtistTagService {
         userArtistTagRepository.delete(userArtistTag);
     }
 
-    public List<Artist> getArtistsEntityByTagId(UUID tagId){
-
-        return userArtistTagRepository.findArtistByTagId(tagId);
-    }
-
     public ArtistsByTagResponse getArtistsByTagId(UUID tagId){
 
         UserTag userTag = userTagService.getEntityById(tagId);

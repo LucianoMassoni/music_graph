@@ -1,6 +1,7 @@
 package com.luciano.music_graph.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -39,6 +40,13 @@ public class Artist {
     private String disambiguation;
 
     private String bio;
+
+    @NotNull
+    @Enumerated(value = EnumType.STRING)
+    private ArtistSource source;
+
+    @NotNull
+    private boolean enriched;
 
     @Column(name = "image_url")
     private String imageUrl;

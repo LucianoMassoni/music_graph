@@ -36,7 +36,7 @@ public class ApiArtistRelationService {
             Artist similarArtist = optionalArtist.orElseGet(() -> artistService.saveBasic(related.name(), related.mbid()));
 
             // check cuál tiene el mbid más chico para guardar con consistencia
-            if (artist.getId().toString().compareTo(similarArtist.getId().toString()) < 0){
+            if (artist.getMbid().compareTo(similarArtist.getMbid()) < 0){
                 artistA = artist;
                 artistB = similarArtist;
             } else {

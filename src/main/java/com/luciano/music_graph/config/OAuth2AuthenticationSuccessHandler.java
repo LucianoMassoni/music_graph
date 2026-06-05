@@ -6,10 +6,10 @@ import com.luciano.music_graph.service.JwtService;
 import com.luciano.music_graph.service.RefreshTokenService;
 import com.luciano.music_graph.service.UserService;
 import com.luciano.music_graph.utils.CookieUtils;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
@@ -33,7 +33,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     private final ObjectMapper mapper;
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+    public void onAuthenticationSuccess(@NonNull HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
 
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         OAuth2AuthenticationToken oAuthToken = (OAuth2AuthenticationToken) authentication;

@@ -4,13 +4,12 @@ import com.luciano.music_graph.dto.ExceptionHandlerDto;
 import com.luciano.music_graph.model.User;
 import com.luciano.music_graph.repository.UserRepository;
 import com.luciano.music_graph.service.JwtService;
-import io.jsonwebtoken.ExpiredJwtException;
-import jakarta.security.auth.message.AuthException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -38,17 +37,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
         String userId;
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")){
-//            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-//            response.setContentType("application/json");
-//            response.getWriter().write(objectMapper.writeValueAsString(
-//                    new ExceptionHandlerDto(403, "Forbidden", "Access denied", Instant.now())
-//            ));
             filterChain.doFilter(request, response);
             return;
         }

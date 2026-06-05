@@ -148,13 +148,13 @@ public class UserArtistService {
 
         List<Node> nodes = new ArrayList<>();
 
-        userArtistList.forEach(userArtist -> {
+        userArtistList.forEach(userArtist ->
             nodes.add(new Node(
                     userArtist.getArtist().getName(),
                     userArtist.getArtist().getMbid(),
                     userArtist.isFollowed()
-            ));
-        });
+            ))
+        );
 
         return nodes;
     }

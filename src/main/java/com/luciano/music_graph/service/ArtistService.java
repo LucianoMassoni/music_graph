@@ -8,6 +8,7 @@ import com.luciano.music_graph.dto.lastfm.LFImageItem;
 import com.luciano.music_graph.dto.lastfm.LFTopTagsResponse;
 import com.luciano.music_graph.mapper.ArtistMapper;
 import com.luciano.music_graph.model.Artist;
+import com.luciano.music_graph.model.ArtistSource;
 import com.luciano.music_graph.repository.ArtistRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class ArtistService {
     public ArtistDetail getOrImport(String mbid){
         Artist artist = artistRepository.findByMbid(mbid).orElseGet(() -> importArtist(mbid));
 
-        if (artist.getBio() == null){
+        if (artist.getSource() == ArtistSource.RELATED && !artist.isEnriched()){
             enrichArtist(artist);
         }
 
@@ -44,7 +45,9 @@ public class ArtistService {
     private Artist importArtist(String mbid){
         // llamo al traer el artista y lo guarda en db
         LFArtistInfoResponse artistInfoResponse = lastFmClient.getInfo(mbid);
-        Artist artist = artistRepository.save(mapper.toEntity(artistInfoResponse.artist()));
+        boolean enriched = true;
+        ArtistSource source = ArtistSource.API_IMPORTED;
+        Artist artist = artistRepository.save(mapper.toEntity(artistInfoResponse.artist(), source, enriched));
 
         // llama a los top tags del artista y los guarda
         LFTopTagsResponse tagResponse = lastFmClient.getTopTags(mbid);
@@ -78,6 +81,8 @@ public class ArtistService {
         LFAlbumResponse albumResponse = lastFmClient.getAlbums(mbid);
         albumService.saveAllAlbumInArtist(albumResponse.topalbums(), artist);
 
+        artist.setEnriched(true);
+
         artistRepository.save(artist);
     }
 
@@ -89,6 +94,8 @@ public class ArtistService {
         Artist artist = new Artist();
         artist.setName(name);
         artist.setMbid(mbid);
+        artist.setSource(ArtistSource.RELATED);
+        artist.setEnriched(false);
         return artistRepository.save(artist);
     }
 }

@@ -1,7 +1,6 @@
 package com.luciano.music_graph.service;
 
 import com.luciano.music_graph.mapper.UserArtistRelationMapper;
-import com.luciano.music_graph.mapper.UserArtistRelationMapperImpl;
 import com.luciano.music_graph.model.Artist;
 import com.luciano.music_graph.model.User;
 import com.luciano.music_graph.model.UserArtistRelation;
@@ -9,6 +8,7 @@ import com.luciano.music_graph.repository.UserArtistRelationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -41,7 +41,7 @@ public class UserArtistRelationServiceTest {
 
     @BeforeEach
     void setUp(){
-        mapper = new UserArtistRelationMapperImpl();
+        mapper = Mappers.getMapper(UserArtistRelationMapper.class);
         ReflectionTestUtils.setField(userArtistRelationService, "mapper", mapper);
         ReflectionTestUtils.setField(userArtistRelationService, "TAG_WEIGHT", TAG_WEIGHT);
     }
