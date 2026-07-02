@@ -1,6 +1,7 @@
 package com.luciano.music_graph.repository;
 
 import com.luciano.music_graph.model.Artist;
+import com.luciano.music_graph.model.User;
 import com.luciano.music_graph.model.UserArtistTag;
 import com.luciano.music_graph.model.UserTag;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -32,4 +33,11 @@ public interface UserArtistTagRepository extends JpaRepository<UserArtistTag, UU
         where uat.artist.mbid = :mbid
     """)
     List<UserTag> findByArtistMbid(String mbid);
+
+    @Query("""
+        select uat.userTag
+        from UserArtistTag as uat
+        where uat.artist.mbid = :mbid and uat.user = :user
+    """)
+    List<UserTag> findByAllByUserAndArtist(User user, String mbid);
 }
