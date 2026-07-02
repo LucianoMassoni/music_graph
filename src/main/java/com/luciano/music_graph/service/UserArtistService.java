@@ -5,6 +5,7 @@ import com.luciano.music_graph.dto.*;
 import com.luciano.music_graph.dto.graph.Node;
 import com.luciano.music_graph.dto.lastfm.LFSearchResponse;
 import com.luciano.music_graph.dto.lastfm.LFSimilarArtistResponse;
+import com.luciano.music_graph.dto.userTag.TagResponse;
 import com.luciano.music_graph.exception.ArtistNotFoundException;
 import com.luciano.music_graph.exception.UserArtistNotFoundException;
 import com.luciano.music_graph.mapper.UserArtistMapper;
@@ -31,7 +32,7 @@ public class UserArtistService {
     private final ApiArtistRelationService apiArtistRelationService;
     private final LastFmClient lastFmClient;
     private final UserArtistMapper mapper;
-
+    private final UserArtistTagService userArtistTagService;
 
     @Lazy
     private UserArtist saveUserArtist(User user, Artist artist){
@@ -157,5 +158,14 @@ public class UserArtistService {
         );
 
         return nodes;
+    }
+
+    public UserArtistDetail getArtist(User user, String mbid){
+
+        ArtistDetail artistDetail = artistService.getOrImport(mbid);
+        boolean followed = userArtistRepository.isFollowed(user, mbid).orElse(false);
+        List<TagResponse> userTags = userArtistTagService.getUserTagsByUserAndArtistMbid(user, mbid);
+
+        return mapper.toUserArtistDetail(artistDetail, userTags, followed);
     }
 }

@@ -39,6 +39,7 @@ public class UserArtistRelationService {
             Long sharedTags = (Long) row[1];
 
             // check cuál es el más chico.
+            // todo: deberia cambiar a mbid por mayor consistencia?
             if (artist.getId().toString().compareTo(relatedArtist.getId().toString()) < 0){
                 artistA = artist;
                 artistB = relatedArtist;
