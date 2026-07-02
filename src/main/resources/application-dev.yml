@@ -14,7 +14,7 @@ spring:
 
 jwt:
   access:
-    secret_key: "Y29udHJhc2XDsWEgZmFjaGVyaXRhY29udHJhc2XDsWEgZmFjaGVyaXRhY29udHJhc2XDsWEgZmFjaGVyaXRh"
+    secret_key: "dW5hY29udHJhc2VubmFzdXBlcnNlZ3VyYXlsb3N1ZmljaWVudGVtZW50ZWxhcmdhY29tb3BhcmFwb2RlcmhhY2VycXVlZWxlbmNyaXB0YW1pZW5kb2Z1bmNpb25l"
     expiration: 3600000        # 1 hora
   refresh:
     expiration: 604800000     # 7 dias

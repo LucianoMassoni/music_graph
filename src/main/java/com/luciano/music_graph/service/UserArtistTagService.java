@@ -4,6 +4,7 @@ package com.luciano.music_graph.service;
 import com.luciano.music_graph.dto.userArtistTag.ArtistsByTagResponse;
 import com.luciano.music_graph.dto.userArtistTag.TagsByArtistResponse;
 import com.luciano.music_graph.dto.userArtistTag.UserArtistTagResponse;
+import com.luciano.music_graph.dto.userTag.TagResponse;
 import com.luciano.music_graph.exception.ArtistNotFoundException;
 import com.luciano.music_graph.exception.UserArtistTagNotFoundException;
 import com.luciano.music_graph.mapper.UserArtistTagMapper;
@@ -67,5 +68,11 @@ public class UserArtistTagService {
         List<UserTag> userTags = userArtistTagRepository.findByArtistMbid(mbid);
 
         return mapper.toTagsByArtist(artist, userTags);
+    }
+
+    public List<TagResponse> getUserTagsByUserAndArtistMbid(User user, String mbid){
+
+        List<UserTag> userTags = userArtistTagRepository.findByAllByUserAndArtist(user, mbid);
+        return mapper.toTagResponse(userTags);
     }
 }

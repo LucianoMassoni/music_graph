@@ -1,3 +1,3 @@
 ALTER TABLE artist
-    ADD COLUMN source VARCHAR(12) NOT NULL,
-    ADD COLUMN enriched BOOLEAN NOT NULL;
+    ADD COLUMN source VARCHAR(12) ,
+    ADD COLUMN enriched BOOLEAN ;

@@ -1,9 +1,9 @@
 package com.luciano.music_graph.controller;
 
-import com.luciano.music_graph.dto.ArtistDetail;
 import com.luciano.music_graph.dto.ArtistSearchResult;
+import com.luciano.music_graph.dto.UserArtistDetail;
 import com.luciano.music_graph.dto.UserArtistResponse;
-import com.luciano.music_graph.dto.userArtistTag.TagsByArtistResponse;
+import com.luciano.music_graph.dto.userTag.TagResponse;
 import com.luciano.music_graph.model.User;
 import com.luciano.music_graph.service.ArtistService;
 import com.luciano.music_graph.service.UserArtistService;
@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,8 +30,8 @@ public class ArtistController {
     }
 
     @GetMapping("/{mbid}")
-    public ResponseEntity<ArtistDetail> getByMbid(@PathVariable String mbid){
-        return ResponseEntity.ok(artistService.getOrImport(mbid));
+    public ResponseEntity<UserArtistDetail> getByMbid(@AuthenticationPrincipal User user, @PathVariable String mbid){
+        return ResponseEntity.ok(userArtistService.getArtist(user, mbid));
     }
 
     @PostMapping("/{mbid}/follow")
@@ -51,8 +53,13 @@ public class ArtistController {
         return ResponseEntity.ok(userArtistService.getAllFollowed(user));
     }
 
+//    @GetMapping("/{mbid}/tags")
+//    public ResponseEntity<TagsByArtistResponse> getTagByArtist(@PathVariable String mbid){
+//        return ResponseEntity.ok(userArtistTagService.getTagsByArtistMbid(mbid));
+//    }
+
     @GetMapping("/{mbid}/tags")
-    public ResponseEntity<TagsByArtistResponse> getTagByArtist(@PathVariable String mbid){
-        return ResponseEntity.ok(userArtistTagService.getTagsByArtistMbid(mbid));
+    public ResponseEntity<List<TagResponse>> getTagByArtist(@AuthenticationPrincipal User user, @PathVariable String mbid){
+        return ResponseEntity.ok(userArtistTagService.getUserTagsByUserAndArtistMbid(user,mbid));
     }
 }

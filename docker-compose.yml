@@ -2,7 +2,7 @@
 services:
   db:
     image: postgres:16
-    container_name: music_graph_db
+#    container_name: music_graph_db
     restart: always
     environment:
       POSTGRES_DB: music_graph
@@ -20,7 +20,7 @@ services:
 
   app:
     build: .
-    container_name: music_graph
+#    container_name: music_graph
     restart: always
     depends_on:
       db:

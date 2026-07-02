@@ -24,9 +24,8 @@ public interface UserArtistTagMapper {
     @Mapping(target = "userTag", source = "userTag")
     UserArtistTag toEntity(User user, Artist artist, UserTag userTag);
 
-    @Mapping(target = "artistMbid", source = "userArtistTag.artist.mbid")
-    @Mapping(target = "tagId", source = "userArtistTag.userTag.id")
-    @Mapping(target = "tagName", source = "userArtistTag.userTag.name")
+    @Mapping(target = "id", source = "userArtistTag.userTag.id")
+    @Mapping(target = "name", source = "userArtistTag.userTag.name")
     UserArtistTagResponse toUserArtistTagResponse(UserArtistTag userArtistTag);
 
     TagResponse toTagResponse(UserTag userTag);
@@ -45,4 +44,6 @@ public interface UserArtistTagMapper {
                 tags.stream().map(this::toTagResponse).toList()
         );
     }
+
+    List<TagResponse> toTagResponse(List<UserTag> userTags);
 }
