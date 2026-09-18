@@ -1,5 +1,6 @@
 package com.luciano.music_graph.repository;
 
+import com.luciano.music_graph.model.Artist;
 import com.luciano.music_graph.model.User;
 import com.luciano.music_graph.model.UserTag;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,4 +20,11 @@ public interface UserTagRepository extends JpaRepository<UserTag, UUID> {
 
     List<UserTag> findByUser(User user);
 
+    @Query("""
+        select a
+        from Artist a
+        join UserArtistTag uat on uat.artist = a
+        where uat.userTag = :userTag
+    """)
+    List<Artist> getAllArtistWithUserTag(UserTag userTag);
 }

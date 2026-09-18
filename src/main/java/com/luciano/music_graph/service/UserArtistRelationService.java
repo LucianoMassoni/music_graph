@@ -3,10 +3,9 @@ package com.luciano.music_graph.service;
 
 import com.luciano.music_graph.dto.graph.Link;
 import com.luciano.music_graph.mapper.UserArtistRelationMapper;
-import com.luciano.music_graph.model.Artist;
-import com.luciano.music_graph.model.User;
-import com.luciano.music_graph.model.UserArtistRelation;
+import com.luciano.music_graph.model.*;
 import com.luciano.music_graph.repository.UserArtistRelationRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -26,7 +25,7 @@ public class UserArtistRelationService {
     private Integer TAG_WEIGHT;
 
     // cada vez que se llama a seguir o dejar de seguir artista se recalcula el peso entre artistas.
-    public void recalculateFromTags(User user, Artist artist){
+    public void recalculateFromTags(User user, Artist artist, UserTag userTag){
 
         Artist artistA;
         Artist artistB;
@@ -39,8 +38,7 @@ public class UserArtistRelationService {
             Long sharedTags = (Long) row[1];
 
             // check cuál es el más chico.
-            // todo: deberia cambiar a mbid por mayor consistencia?
-            if (artist.getId().toString().compareTo(relatedArtist.getId().toString()) < 0){
+            if (artist.getMbid().compareTo(relatedArtist.getMbid()) < 0){
                 artistA = artist;
                 artistB = relatedArtist;
             } else {
@@ -51,14 +49,7 @@ public class UserArtistRelationService {
             // la de tags en común por el peso de cercanía.
             Integer weight = sharedTags.intValue() * TAG_WEIGHT;
 
-            UserArtistRelation userArtistRelation = getOrCreate(user, artistA, artistB);
-
-            // si es cero lo elimina
-            if (weight.equals(0)){
-                userArtistRelationRepository.delete(userArtistRelation);
-                continue;
-            }
-
+            UserArtistRelation userArtistRelation = getOrCreate(user, artistA, artistB, userTag);
             userArtistRelation.setWeight(weight);
 
             userArtistRelationRepository.save(userArtistRelation);
@@ -66,10 +57,42 @@ public class UserArtistRelationService {
     }
 
 
-    private UserArtistRelation getOrCreate(User user, Artist artistA, Artist artistB){
+    private UserArtistRelation getOrCreate(User user, Artist artistA, Artist artistB, UserTag userTag){
 
-        return userArtistRelationRepository.getEntityByUserAndArtist(user, artistA, artistB)
-                .orElseGet(() -> mapper.toEntity(user, artistA, artistB));
+        UserArtistRelation relation = userArtistRelationRepository.getEntityByUserAndArtist(user, artistA, artistB)
+                    .orElseGet(() ->
+                            mapper.toEntity(
+                                    user,
+                                    artistA,
+                                    artistB,
+                                    new ArrayList<>()
+                            )
+                    );
+
+        if (!relation.getUserTags().contains(userTag)) {
+            relation.getUserTags().add(userTag);
+        }
+
+        return relation;
+    }
+
+    @Transactional
+    public void checkAndDeleteRelation(User user, Artist artist, UserTag userTag){
+
+        List<UserArtistRelation> relations = userArtistRelationRepository.getRelationsByUserArtistAndTag(user, artist, userTag);
+
+        relations.forEach(relation -> {
+            relation.getUserTags().remove(userTag);
+
+            int weight = relation.getUserTags().size() * TAG_WEIGHT;
+
+            if (weight == 0) {
+                userArtistRelationRepository.delete(relation);
+            } else {
+                relation.setWeight(weight);
+                userArtistRelationRepository.save(relation);
+            }
+        });
     }
 
     public List<Link> getLinks(User user, String mbid){

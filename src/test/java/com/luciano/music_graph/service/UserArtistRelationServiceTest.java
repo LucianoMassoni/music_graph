@@ -4,6 +4,7 @@ import com.luciano.music_graph.mapper.UserArtistRelationMapper;
 import com.luciano.music_graph.model.Artist;
 import com.luciano.music_graph.model.User;
 import com.luciano.music_graph.model.UserArtistRelation;
+import com.luciano.music_graph.model.UserTag;
 import com.luciano.music_graph.repository.UserArtistRelationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,6 +57,9 @@ public class UserArtistRelationServiceTest {
         Artist related = new Artist();
         related.setId(UUID.fromString("00000000-0000-0000-0000-000000000002"));
 
+        UserTag userTag = new UserTag();
+        userTag.setId(UUID.randomUUID());
+
         List<Object[]> results = Collections.singletonList(
                 new Object[]{related, 2L}
         );
@@ -64,7 +68,7 @@ public class UserArtistRelationServiceTest {
         when(relationRepository.getEntityByUserAndArtist(user, artist, related)).thenReturn(Optional.empty());
         when(relationRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
-        userArtistRelationService.recalculateFromTags(user, artist);
+        userArtistRelationService.recalculateFromTags(user, artist, userTag);
 
         verify(relationRepository).save(argThat(rel ->
                 rel.getWeight().equals(2 * TAG_WEIGHT)
@@ -81,6 +85,9 @@ public class UserArtistRelationServiceTest {
         Artist related = new Artist();
         related.setId(UUID.randomUUID());
 
+        UserTag userTag = new UserTag();
+        userTag.setId(UUID.randomUUID());
+
         List<Object[]> results = Collections.singletonList(
                 new Object[]{related, 0L}
         );
@@ -90,7 +97,7 @@ public class UserArtistRelationServiceTest {
         when(relationRepository.getUserArtistTagByUserAndArtist(user, artist)).thenReturn(results);
         when(relationRepository.getEntityByUserAndArtist(any(), any(), any())).thenReturn(Optional.of(relation));
 
-        userArtistRelationService.recalculateFromTags(user, artist);
+        userArtistRelationService.recalculateFromTags(user, artist, userTag);
 
         verify(relationRepository).delete(relation);
         verify(relationRepository, never()).save(any());
@@ -107,6 +114,9 @@ public class UserArtistRelationServiceTest {
         Artist related = new Artist();
         related.setId(UUID.randomUUID());
 
+        UserTag userTag = new UserTag();
+        userTag.setId(UUID.randomUUID());
+
         List<Object[]> results = Collections.singletonList(
                 new Object[]{related, 3L}
         );
@@ -117,7 +127,7 @@ public class UserArtistRelationServiceTest {
         when(relationRepository.getEntityByUserAndArtist(any(), any(), any())).thenReturn(Optional.of(existing));
         when(relationRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
-        userArtistRelationService.recalculateFromTags(user, artist);
+        userArtistRelationService.recalculateFromTags(user, artist, userTag);
 
         assertEquals(3 * TAG_WEIGHT, existing.getWeight());
         verify(relationRepository).save(existing);
@@ -137,6 +147,9 @@ public class UserArtistRelationServiceTest {
         Artist related2 = new Artist();
         related2.setId(UUID.randomUUID());
 
+        UserTag userTag = new UserTag();
+        userTag.setId(UUID.randomUUID());
+
         List<Object[]> results = List.of(
                 new Object[]{related1, 0L}, // se elimina
                 new Object[]{related2, 5L}  // se guarda
@@ -146,7 +159,7 @@ public class UserArtistRelationServiceTest {
         when(relationRepository.getEntityByUserAndArtist(any(), any(), any())).thenReturn(Optional.of(new UserArtistRelation()));
         when(relationRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
-        userArtistRelationService.recalculateFromTags(user, artist);
+        userArtistRelationService.recalculateFromTags(user, artist, userTag);
 
         verify(relationRepository, times(1)).delete(any());
         verify(relationRepository, times(1)).save(any());
@@ -168,6 +181,9 @@ public class UserArtistRelationServiceTest {
         Artist related = new Artist();
         related.setId(UUID.fromString("00000000-0000-0000-0000-000000000001")); // menor
 
+        UserTag userTag = new UserTag();
+        userTag.setId(UUID.randomUUID());
+
         List<Object[]> results = Collections.singletonList(
                 new Object[]{related, 2L}
         );
@@ -176,7 +192,7 @@ public class UserArtistRelationServiceTest {
         when(relationRepository.getEntityByUserAndArtist(any(), any(), any())).thenReturn(Optional.empty());
         when(relationRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
-        userArtistRelationService.recalculateFromTags(user, artist);
+        userArtistRelationService.recalculateFromTags(user, artist, userTag);
 
         ArgumentCaptor<UserArtistRelation> captor = ArgumentCaptor.forClass(UserArtistRelation.class);
 

@@ -1,13 +1,12 @@
 package com.luciano.music_graph.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+
+import java.util.List;
 
 
 @Entity
@@ -23,4 +22,11 @@ public class UserArtistRelation extends ArtistRelationBase {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+            name = "user_artist_relation_tags",
+            joinColumns = @JoinColumn(name = "relation_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private List<UserTag> userTags;
 }
