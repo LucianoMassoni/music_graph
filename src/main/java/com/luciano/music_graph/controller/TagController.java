@@ -46,9 +46,9 @@ public class TagController {
     }
 
     @DeleteMapping("/{tagId}/artists/{artistMbid}")
-    public ResponseEntity<Void> delete(@PathVariable UUID tagId, @PathVariable String artistMbid){
+    public ResponseEntity<Void> delete(@AuthenticationPrincipal User user, @PathVariable UUID tagId, @PathVariable String artistMbid){
 
-        userArtistTagService.delete(tagId, artistMbid);
+        userArtistTagService.delete(user, tagId, artistMbid);
         return ResponseEntity.noContent().build();
     }
 

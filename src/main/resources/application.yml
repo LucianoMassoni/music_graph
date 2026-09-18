@@ -13,7 +13,7 @@ spring:
               - email
 
 lastfm:
-  api-key: ${LAST_FM_API_KEY}
+  api-key: ${LASTFM_API_KEY}
 
 graph:
   tag-weight: 10
