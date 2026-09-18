@@ -40,14 +40,14 @@ public interface UserArtistRepository extends JpaRepository<UserArtist, UUID> {
         coalesce(ua.followed, false) as followed
     from Artist base_artist
     join ApiArtistRelation aar
-        on base_artist.id in (aar.artistA.id, aar.artistB.id)
+        on base_artist.mbid in (aar.artistA.mbid, aar.artistB.mbid)
     join Artist related_artist
-        on related_artist.id = case
-            when aar.artistA.id = base_artist.id then aar.artistB.id
-            else aar.artistA.id
+        on related_artist.mbid = case
+            when aar.artistA.mbid = base_artist.mbid then aar.artistB.mbid
+            else aar.artistA.mbid
         end
     left join UserArtist ua
-        on ua.artist.id = related_artist.id
+        on ua.artist.mbid = related_artist.mbid
         and ua.user = :user
     where base_artist = :artist
     and aar.weight >= 50

@@ -5,6 +5,7 @@ import com.luciano.music_graph.dto.userTag.TagResponse;
 import com.luciano.music_graph.exception.UserTagNameAlreadyExistsException;
 import com.luciano.music_graph.exception.UserTagNotFoundException;
 import com.luciano.music_graph.mapper.UserTagMapper;
+import com.luciano.music_graph.model.Artist;
 import com.luciano.music_graph.model.User;
 import com.luciano.music_graph.model.UserTag;
 import com.luciano.music_graph.repository.UserTagRepository;
@@ -19,6 +20,7 @@ import java.util.UUID;
 public class UserTagService {
 
     private final UserTagRepository userTagRepository;
+    private final UserArtistRelationService userArtistRelationService;
     private final UserTagMapper mapper;
 
     public TagResponse create(User user, TagRequest request){
@@ -43,7 +45,13 @@ public class UserTagService {
 
     public void deleteTag(UUID id){
 
-        userTagRepository.deleteById(id);
+        UserTag userTag = userTagRepository.findById(id).orElseThrow(() -> new UserTagNotFoundException(id));
+
+        List<Artist> artists = userTagRepository.getAllArtistWithUserTag(userTag);
+        // recalcula la relación del artista con otros eliminando el userTag
+        artists.forEach(artist -> userArtistRelationService.checkAndDeleteRelation(userTag.getUser(), artist, userTag));
+
+        userTagRepository.delete(userTag);
     }
 
     public UserTag getEntityById(UUID id){

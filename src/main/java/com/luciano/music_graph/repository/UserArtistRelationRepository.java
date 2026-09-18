@@ -39,14 +39,14 @@ public interface UserArtistRelationRepository extends JpaRepository<UserArtistRe
         end as followed
     from ApiArtistRelation aar
     join Artist artist_a
-        on artist_a.id = aar.artistA.id
+        on artist_a.mbid = aar.artistA.mbid
     join Artist artist_b
-        on artist_b.id = aar.artistB.id
+        on artist_b.mbid = aar.artistB.mbid
     left join UserArtist ua_a
-    	on ua_a.artist.id = artist_a.id
+    	on ua_a.artist.mbid = artist_a.mbid
     	and ua_a.user = :user
     left join UserArtist ua_b
-    	on ua_b.artist.id  = artist_b.id
+    	on ua_b.artist.mbid  = artist_b.mbid
     	and ua_b.user = :user
     where (
         artist_a.mbid = :mbid
@@ -55,4 +55,14 @@ public interface UserArtistRelationRepository extends JpaRepository<UserArtistRe
     and aar.weight >= 50
     """)
     List<Object[]> getAllRelations(User user, String mbid);
+
+    @Query("""
+    select distinct uar
+    from UserArtistRelation uar
+    join uar.userTags tag
+    where uar.user = :user
+      and (uar.artistA = :artist or uar.artistB = :artist)
+      and tag = :tag
+    """)
+    List<UserArtistRelation> getRelationsByUserArtistAndTag(User user, Artist artist, UserTag tag);
 }
