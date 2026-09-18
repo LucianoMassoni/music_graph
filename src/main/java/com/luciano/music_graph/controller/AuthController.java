@@ -1,6 +1,5 @@
 package com.luciano.music_graph.controller;
 
-import com.luciano.music_graph.dto.AuthResponse;
 import com.luciano.music_graph.dto.AuthTokens;
 import com.luciano.music_graph.dto.LoginRequest;
 import com.luciano.music_graph.dto.RegisterRequest;
@@ -26,25 +25,29 @@ public class AuthController {
     private final RefreshTokenService refreshTokenService;
 
     @PostMapping("register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request){
+    public ResponseEntity<Void> register(@Valid @RequestBody RegisterRequest request){
 
         AuthTokens tokens = authService.register(request);
-        ResponseCookie cookie = cookieUtils.createRefreshTokenCookie(tokens.refreshToken());
+        ResponseCookie refreshCookie = cookieUtils.createRefreshTokenCookie(tokens.refreshToken());
+        ResponseCookie accessCookie = cookieUtils.createAccessTokenCookie(tokens.accessToken());
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(new AuthResponse(tokens.accessToken()));
+        return ResponseEntity.noContent()
+                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
+                .build();
     }
 
     @PostMapping("login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request){
         try {
             AuthTokens tokens = authService.login(request);
-            ResponseCookie cookie = cookieUtils.createRefreshTokenCookie(tokens.refreshToken());
+            ResponseCookie refreshCookie = cookieUtils.createRefreshTokenCookie(tokens.refreshToken());
+            ResponseCookie accessCookie = cookieUtils.createAccessTokenCookie(tokens.accessToken());
 
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                    .body(new AuthResponse(tokens.accessToken()));
+            return ResponseEntity.noContent()
+                    .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                    .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
+                    .build();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -53,17 +56,20 @@ public class AuthController {
     }
 
     @PostMapping("refresh")
-    public ResponseEntity<AuthResponse> refresh(@CookieValue(name = "refreshToken", required = false) String refreshTokenString){
+    public ResponseEntity<Void> refresh(@CookieValue(name = "refreshToken", required = false) String refreshTokenString){
 
         if (refreshTokenString == null) throw new RefreshTokenNotFoundException("cookie missing");
 
         RefreshToken refreshToken = refreshTokenService.findByToken(refreshTokenString);
         AuthTokens tokens = authService.refresh(refreshToken);
-        ResponseCookie newCookie = cookieUtils.createRefreshTokenCookie(tokens.refreshToken());
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, newCookie.toString())
-                .body(new AuthResponse(tokens.accessToken()));
+        ResponseCookie refreshCookie = cookieUtils.createRefreshTokenCookie(tokens.refreshToken());
+        ResponseCookie accessCookie = cookieUtils.createAccessTokenCookie(tokens.accessToken());
+
+        return ResponseEntity.noContent()
+                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
+                .build();
     }
 
     @PostMapping("logout")
@@ -73,10 +79,12 @@ public class AuthController {
 
         RefreshToken refreshToken = refreshTokenService.findByToken(refreshTokenString);
         authService.logout(refreshToken);
-        ResponseCookie cookie = cookieUtils.deleteRefreshTokenCookie();
+        ResponseCookie refreshCookie = cookieUtils.deleteRefreshTokenCookie();
+        ResponseCookie accessCookie = cookieUtils.deleteAccessTokenCookie();
 
         return ResponseEntity.noContent()
-                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
                 .build();
     }
 }
