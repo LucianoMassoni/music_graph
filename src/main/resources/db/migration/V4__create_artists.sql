@@ -1,13 +1,14 @@
 create table artist(
     id uuid not null,
-    mb_id varchar(124) not null,
+    mbid varchar(124) not null,
     name varchar(124) not null,
     country varchar(124),
     debut_year int,
     type varchar (64),
     disambiguation varchar(124),
     created_at timestamp(6),
-    primary key (id)
+    primary key (id),
+    constraint uq_artist_mbid unique (mbid)
 );
 
 create table artist_tags(

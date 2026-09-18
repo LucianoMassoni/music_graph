@@ -23,11 +23,11 @@ public abstract class ArtistRelationBase {
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "artist_a_id")
+    @JoinColumn(name = "artist_a_mbid", referencedColumnName = "mbid")
     private Artist artistA;
 
     @ManyToOne
-    @JoinColumn(name = "artist_b_id")
+    @JoinColumn(name = "artist_b_mbid", referencedColumnName = "mbid")
     private Artist artistB;
 
     private Integer weight;

@@ -12,8 +12,5 @@ create table album(
 );
 
 alter table artist
-rename column mb_id to mbid;
-
-alter table artist
 add image_url text,
 add bio text;
