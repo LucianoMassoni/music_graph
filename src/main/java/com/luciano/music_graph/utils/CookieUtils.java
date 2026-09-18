@@ -11,14 +11,17 @@ public class CookieUtils {
     private boolean secure;
 
     @Value("${jwt.refresh.expiration}")
-    private long durationMs;
+    private long refreshDurationMs;
+
+    @Value("${jwt.access.expiration}")
+    private long accessDurationMs;
 
     public ResponseCookie createRefreshTokenCookie(String token){
         return ResponseCookie.from("refreshToken", token)
                 .httpOnly(true)
                 .secure(secure)
-                .path("api/auth")
-                .maxAge(durationMs / 1000)
+                .path("/api/auth")
+                .maxAge(refreshDurationMs / 1000)
                 .sameSite("Strict")
                 .build();
     }
@@ -27,7 +30,25 @@ public class CookieUtils {
         return ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
                 .secure(secure)
-                .path("api/auth")
+                .path("/api/auth")
+                .maxAge(0)
+                .build();
+    }
+
+    public ResponseCookie createAccessTokenCookie(String token){
+        return ResponseCookie.from("accessToken", token)
+                .httpOnly(true)
+                .secure(secure)
+                .path("/api")
+                .maxAge(accessDurationMs / 1000)
+                .build();
+    }
+
+    public ResponseCookie deleteAccessTokenCookie(){
+        return ResponseCookie.from("accessToken", "")
+                .httpOnly(true)
+                .secure(secure)
+                .path("/api")
                 .maxAge(0)
                 .build();
     }

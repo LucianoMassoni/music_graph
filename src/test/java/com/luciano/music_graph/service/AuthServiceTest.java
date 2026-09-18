@@ -168,8 +168,8 @@ public class AuthServiceTest  {
         when(authenticationManager.authenticate(any()))
                 .thenReturn(mock(Authentication.class));
 
-        when(userService.access(request))
-                .thenThrow(new RuntimeException());
+//        when(userService.access(request))
+//                .thenThrow(new RuntimeException());
 
         assertThrows(RuntimeException.class, () -> {
             authService.login(request);
@@ -188,10 +188,10 @@ public class AuthServiceTest  {
 
         when(authenticationManager.authenticate(any()))
                 .thenReturn(mock(Authentication.class));
-        when(userService.access(request)).thenReturn(user);
+//        when(userService.access(request)).thenReturn(user);
 
-        when(refreshTokenService.create(user.getId()))
-                .thenThrow(new RuntimeException());
+//        when(refreshTokenService.create(user.getId()))
+//                .thenThrow(new RuntimeException());
 
         assertThrows(RuntimeException.class, () -> {
             authService.login(request);

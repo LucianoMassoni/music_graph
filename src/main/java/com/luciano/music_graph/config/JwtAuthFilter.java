@@ -6,6 +6,7 @@ import com.luciano.music_graph.repository.UserRepository;
 import com.luciano.music_graph.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.util.WebUtils;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -37,17 +39,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
-        final String authHeader = request.getHeader("Authorization");
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         final String jwt;
         String userId;
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")){
+        Cookie accessTokenCookie = WebUtils.getCookie(request, "accessToken");
+
+        if (accessTokenCookie == null){
             filterChain.doFilter(request, response);
             return;
         }
 
-        jwt = authHeader.substring(7); // quita el "Bearer ". de ahi el 7.
+        jwt = accessTokenCookie.getValue();
 
         try {
             userId = jwtService.extractUserId(jwt);
