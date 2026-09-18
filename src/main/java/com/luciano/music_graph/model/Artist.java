@@ -24,7 +24,7 @@ public class Artist {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(unique = true, name = "mbid")
+    @Column(unique = true, name = "mbid", nullable = false)
     private String mbid;
 
     @Column(nullable = false)
