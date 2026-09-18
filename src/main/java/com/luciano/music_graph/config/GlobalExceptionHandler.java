@@ -4,6 +4,8 @@ import com.luciano.music_graph.dto.ExceptionHandlerDto;
 import com.luciano.music_graph.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -30,6 +32,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({LastFmApiException.class, UserAlreadyExistsException.class, UsernameAlreadyExistsException.class})
     public ResponseEntity<ExceptionHandlerDto> handlerBadRequest(RuntimeException ex){
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ExceptionHandlerDto> handlerBadMailRequest(MethodArgumentNotValidException ex){
+        return buildResponse(HttpStatus.BAD_REQUEST, "Invalid email");
     }
 
     @ExceptionHandler({RefreshTokenExpirationException.class, InvalidCredentialsException.class})

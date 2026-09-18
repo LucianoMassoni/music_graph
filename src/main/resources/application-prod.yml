@@ -21,3 +21,6 @@ jwt:
 
 cookie:
   secure: true
+
+front:
+  url: ${FRONT_URL}
