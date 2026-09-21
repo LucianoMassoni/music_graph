@@ -22,7 +22,7 @@ public class CookieUtils {
                 .secure(secure)
                 .path("/api/auth")
                 .maxAge(refreshDurationMs / 1000)
-                .sameSite("Strict")
+//                .sameSite("Strict")
                 .build();
     }
 
