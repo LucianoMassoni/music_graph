@@ -22,7 +22,7 @@ public class CookieUtils {
                 .secure(secure)
                 .path("/api/auth")
                 .maxAge(refreshDurationMs / 1000)
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
     }
 
@@ -41,7 +41,7 @@ public class CookieUtils {
                 .secure(secure)
                 .path("/api")
                 .maxAge(accessDurationMs / 1000)
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
     }
 
